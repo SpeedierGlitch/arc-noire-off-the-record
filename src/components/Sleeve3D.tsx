@@ -16,11 +16,12 @@ function makeCanvas(draw: (c: CanvasRenderingContext2D, s: number) => void) {
   draw(ctx, size);
   // photocopy grain
   const img = ctx.getImageData(0, 0, size, size);
-  for (let i = 0; i < img.data.length; i += 4) {
+  const d = img.data;
+  for (let i = 0; i < d.length; i += 4) {
     const n = (Math.random() - 0.5) * 34;
-    img.data[i] += n;
-    img.data[i + 1] += n;
-    img.data[i + 2] += n;
+    d[i] = (d[i] ?? 0) + n;
+    d[i + 1] = (d[i + 1] ?? 0) + n;
+    d[i + 2] = (d[i + 2] ?? 0) + n;
   }
   ctx.putImageData(img, 0, 0);
   const tex = new THREE.CanvasTexture(canvas);
@@ -34,12 +35,13 @@ function regMarks(c: CanvasRenderingContext2D, s: number, color: string) {
   c.lineWidth = 2;
   const m = 34;
   const d = 18;
-  [
+  const pts: Array<[number, number]> = [
     [m, m],
     [s - m, m],
     [m, s - m],
     [s - m, s - m],
-  ].forEach(([x, y]) => {
+  ];
+  pts.forEach(([x, y]) => {
     c.beginPath();
     c.moveTo(x - d, y);
     c.lineTo(x + d, y);

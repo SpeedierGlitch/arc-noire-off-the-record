@@ -40,7 +40,7 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-4">
-          <Link to="/shop" search={{ q: "" }} className="label-sans hidden text-muted-foreground hover:text-foreground sm:inline">
+          <Link to="/shop" className="label-sans hidden text-muted-foreground hover:text-foreground sm:inline">
             SEARCH
           </Link>
           <button
