@@ -58,11 +58,11 @@ export function BagProvider({ children }: { children: ReactNode }) {
 
   const add = useCallback((slug: string, size: string) => {
     setLines((prev) => {
-      const i = prev.findIndex((l) => l.slug === slug && l.size === size);
-      if (i === -1) return [...prev, { slug, size, qty: 1 }];
-      const next = [...prev];
-      next[i] = { ...next[i], qty: next[i].qty + 1 };
-      return next;
+      const existing = prev.find((l) => l.slug === slug && l.size === size);
+      if (!existing) return [...prev, { slug, size, qty: 1 }];
+      return prev.map((l) =>
+        l.slug === slug && l.size === size ? { ...l, qty: l.qty + 1 } : l,
+      );
     });
     setOpen(true);
   }, []);
