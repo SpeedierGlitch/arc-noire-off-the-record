@@ -49,12 +49,12 @@ function Storefront() {
   return (
     <main className="min-h-screen bg-background text-foreground">
       <section className="relative min-h-[100svh] overflow-hidden">
-        <header className="absolute inset-x-0 top-0 z-30 flex items-start justify-between p-4 md:p-8">
-          <div>
+        <header className="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-start justify-between p-4 md:p-8">
+          <div className="pointer-events-auto">
             <h1 className="label-sans text-lg tracking-[0.08em]">ARC NOIRE</h1>
             <p className="mono-meta mt-1 text-muted-foreground">{CATALOG_NO} / {SEASON}</p>
           </div>
-          <nav className="flex items-center gap-5" aria-label="Main">
+          <nav className="pointer-events-auto flex items-center gap-5" aria-label="Main">
             <a href="#information" className="mono-meta text-muted-foreground hover:text-foreground">INFO</a>
             <Button variant="ghost" onClick={() => setOpen(true)} className="mono-meta hover:text-primary" aria-label={`Open bag, ${count} items`}>
               BAG [{count}]
