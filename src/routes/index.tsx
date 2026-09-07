@@ -1,8 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useCallback, useEffect, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import { CATALOG_NO, DROP, RELEASE, SEASON, formatPrice, products } from "@/lib/catalog";
 import { useBag } from "@/lib/bag";
 import { Button } from "@/components/ui/button";
+import { useMounted, useReducedMotion } from "@/hooks/use-reduced-motion";
+
+const Sleeve3D = lazy(() => import("@/components/Sleeve3D"));
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -23,6 +26,8 @@ function Storefront() {
   const [active, setActive] = useState(0);
   const [size, setSize] = useState(products[0]?.sizes[0] ?? "");
   const [details, setDetails] = useState(false);
+  const mounted = useMounted();
+  const reducedMotion = useReducedMotion();
   const product = products[active];
 
   const move = useCallback((step: number) => {
@@ -63,10 +68,17 @@ function Storefront() {
         </header>
 
         <div className="grid min-h-[100svh] grid-rows-[1fr_auto] md:grid-cols-[minmax(0,1fr)_22rem] md:grid-rows-1">
-          <div className="relative min-h-[62svh] overflow-hidden bg-charcoal md:min-h-screen">
-            <img key={product.slug} src={product.image} alt={`${product.name} — ${product.colorway}`} className="carousel-image h-full w-full object-cover" width={1024} height={1024} />
-            <div className="absolute inset-0 bg-background/10" />
-            <p className="mono-meta absolute bottom-4 left-4 text-foreground/70 md:bottom-8 md:left-8">
+          <div className="relative flex min-h-[56svh] items-center justify-center overflow-hidden bg-charcoal px-5 pb-16 pt-24 md:min-h-screen md:px-16 md:py-24">
+            <Link
+              to="/product/$slug"
+              params={{ slug: product.slug }}
+              className="group relative block h-auto w-full max-w-[36rem] border border-border bg-background p-2 md:max-h-[70vh] md:w-auto md:p-3"
+              aria-label={`View ${product.name} details`}
+            >
+              <img key={product.slug} src={product.image} alt={`${product.name} — ${product.colorway}`} className="carousel-image aspect-square h-auto max-h-[66vh] w-full object-cover transition-[filter] group-hover:contrast-125" width={1024} height={1024} />
+              <span className="mono-meta absolute bottom-5 right-5 bg-background px-2 py-1 text-foreground">VIEW ITEM ↗</span>
+            </Link>
+            <p className="mono-meta absolute bottom-5 left-5 text-foreground/70 md:bottom-8 md:left-8">
               SIDE {product.side} / TRACK {product.track} · {String(active + 1).padStart(2, "0")}/{String(products.length).padStart(2, "0")}
             </p>
             <div className="absolute inset-y-0 left-4 z-20 hidden flex-col justify-center gap-3 md:flex">
@@ -74,8 +86,10 @@ function Storefront() {
                 <Button variant="ghost" key={item.slug} onClick={() => setActive(index)} className={`h-px transition-all ${index === active ? "w-10 bg-foreground" : "w-4 bg-foreground/30 hover:w-7"}`} aria-label={`View ${item.name}`} aria-current={index === active ? "true" : undefined} />
               ))}
             </div>
-            <Button variant="ghost" onClick={() => move(-1)} className="absolute inset-y-20 left-0 z-10 w-1/3 cursor-w-resize" aria-label="Previous product" />
-            <Button variant="ghost" onClick={() => move(1)} className="absolute inset-y-20 right-0 z-10 w-1/3 cursor-e-resize" aria-label="Next product" />
+            <div className="absolute bottom-4 right-4 z-20 flex border border-border bg-background md:bottom-8 md:right-8">
+              <Button variant="ghost" size="icon" onClick={() => move(-1)} className="border-r border-border" aria-label="Previous product">←</Button>
+              <Button variant="ghost" size="icon" onClick={() => move(1)} aria-label="Next product">→</Button>
+            </div>
           </div>
 
           <aside className="relative z-20 flex flex-col justify-end border-t border-border bg-background p-4 md:border-l md:border-t-0 md:p-8">
@@ -105,6 +119,26 @@ function Storefront() {
         </div>
       </section>
 
+      <section className="grid min-h-[70svh] border-t border-border md:grid-cols-[minmax(0,1fr)_22rem]">
+        <div className="relative min-h-[32rem] bg-charcoal">
+          {mounted && !reducedMotion ? (
+            <Suspense fallback={<SleeveFallback />}>
+              <Sleeve3D />
+            </Suspense>
+          ) : (
+            <SleeveFallback />
+          )}
+          <p className="mono-meta pointer-events-none absolute bottom-5 left-5 text-muted-foreground md:bottom-8 md:left-8">DRAG TO ROTATE / 3D RECORD SLEEVE</p>
+        </div>
+        <div className="flex flex-col justify-between border-t border-border p-5 md:border-l md:border-t-0 md:p-8">
+          <p className="mono-meta text-primary">PHYSICAL EDITION / {CATALOG_NO}</p>
+          <div className="mt-16">
+            <h2 className="label-sans text-2xl leading-tight">OFF THE RECORD</h2>
+            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">Rotate the original sleeve. The tape player remains available at the lower edge for the demo transfer.</p>
+          </div>
+        </div>
+      </section>
+
       <section id="information" className="border-t border-border px-4 py-16 md:px-8 md:py-24">
         <div className="grid gap-10 md:grid-cols-[1fr_2fr]">
           <p className="mono-meta text-primary">INFORMATION / {CATALOG_NO}</p>
@@ -120,5 +154,19 @@ function Storefront() {
         </div>
       </section>
     </main>
+  );
+}
+
+function SleeveFallback() {
+  return (
+    <div className="flex h-full min-h-[32rem] items-center justify-center p-8">
+      <div className="aspect-square w-full max-w-sm border border-border bg-background p-6 shadow-[12px_12px_0_0_var(--primary)]">
+        <p className="label-sans">ARC NOIRE</p>
+        <div className="mt-12 bg-primary p-5 text-primary-foreground">
+          <p className="label-sans text-xl">OFF THE RECORD</p>
+        </div>
+        <p className="mono-meta mt-12 text-muted-foreground">{SEASON} / {CATALOG_NO}</p>
+      </div>
+    </div>
   );
 }
