@@ -38,9 +38,9 @@
   --color-charcoal: var(--charcoal);
   --color-garment-green: var(--garment-green);
   --color-garment-denim: var(--garment-denim);
-  --font-serif-display: "Instrument Serif", "Times New Roman", serif;
-  --font-sans: "Archivo", "Helvetica Neue", Arial, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-serif-display: "IBM Plex Mono", ui-monospace, monospace;
+  --font-sans: "IBM Plex Mono", ui-monospace, monospace;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 }
 
 :root {
@@ -86,6 +86,7 @@
     color: var(--color-foreground);
     font-family: var(--font-sans);
     font-feature-settings: "ss01";
+    margin: 0;
   }
 
   ::selection {
@@ -116,7 +117,24 @@
   font-family: var(--font-serif-display);
   font-weight: 400;
   line-height: 0.9;
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
+}
+
+@utility carousel-image {
+  animation: carousel-reveal 360ms ease-out both;
+}
+
+@keyframes carousel-reveal {
+  from {
+    opacity: 0.35;
+    transform: scale(1.015);
+    filter: grayscale(1) contrast(1.15);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+    filter: grayscale(0.2) contrast(1.04);
+  }
 }
 
 /* scan lines over dark surfaces */
