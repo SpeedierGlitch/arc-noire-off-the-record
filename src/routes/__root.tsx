@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { BagProvider } from "../lib/bag";
 import { BagDrawer } from "../components/BagDrawer";
+import { ArchivalPlayer } from "../components/ArchivalPlayer";
 
 function NotFoundComponent() {
   return (
@@ -116,6 +117,7 @@ function RootComponent() {
       <BagProvider>
         <Outlet />
         <BagDrawer />
+        <ArchivalPlayer />
       </BagProvider>
     </QueryClientProvider>
   );
