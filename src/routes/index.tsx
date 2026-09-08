@@ -134,7 +134,7 @@ function Storefront() {
           <p className="mono-meta text-primary">PHYSICAL EDITION / {CATALOG_NO}</p>
           <div className="mt-16">
             <h2 className="label-sans text-2xl leading-tight">OFF THE RECORD</h2>
-            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">Rotate the original sleeve. The tape player remains available at the lower edge for the demo transfer.</p>
+            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">Rotate the original record sleeve. The physical edition is filed under {CATALOG_NO}.</p>
           </div>
         </div>
       </section>
