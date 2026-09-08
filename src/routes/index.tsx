@@ -87,8 +87,8 @@ function Storefront() {
               ))}
             </div>
             <div className="absolute bottom-4 right-4 z-20 flex border border-border bg-background md:bottom-8 md:right-8">
-              <Button variant="ghost" size="icon" onClick={() => move(-1)} className="border-r border-border" aria-label="Previous product">←</Button>
-              <Button variant="ghost" size="icon" onClick={() => move(1)} aria-label="Next product">→</Button>
+              <Button variant="ghost" size="icon" onClick={() => move(-1)} className="border-r border-border" aria-label="Previous product">⏮</Button>
+              <Button variant="ghost" size="icon" onClick={() => move(1)} aria-label="Next product">⏭</Button>
             </div>
           </div>
 
@@ -134,7 +134,7 @@ function Storefront() {
           <p className="mono-meta text-primary">PHYSICAL EDITION / {CATALOG_NO}</p>
           <div className="mt-16">
             <h2 className="label-sans text-2xl leading-tight">OFF THE RECORD</h2>
-            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">Rotate the original sleeve. The tape player remains available at the lower edge for the demo transfer.</p>
+            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">Rotate the original record sleeve. The physical edition is filed under {CATALOG_NO}.</p>
           </div>
         </div>
       </section>
