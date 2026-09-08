@@ -60,6 +60,7 @@ function Storefront() {
             <p className="mono-meta mt-1 text-muted-foreground">{CATALOG_NO} / {SEASON}</p>
           </div>
           <nav className="pointer-events-auto flex items-center gap-5" aria-label="Main">
+            <Link to="/archive" className="mono-meta text-muted-foreground hover:text-foreground">ARCHIVE</Link>
             <a href="#information" className="mono-meta text-muted-foreground hover:text-foreground">INFO</a>
             <Button variant="ghost" onClick={() => setOpen(true)} className="mono-meta hover:text-primary" aria-label={`Open bag, ${count} items`}>
               BAG [{count}]
