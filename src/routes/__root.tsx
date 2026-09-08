@@ -116,7 +116,6 @@ function RootComponent() {
       <BagProvider>
         <Outlet />
         <BagDrawer />
-        <ArchivalPlayer />
       </BagProvider>
     </QueryClientProvider>
   );
