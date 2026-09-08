@@ -60,6 +60,7 @@ function Storefront() {
             <p className="mono-meta mt-1 text-muted-foreground">{CATALOG_NO} / {SEASON}</p>
           </div>
           <nav className="pointer-events-auto flex items-center gap-5" aria-label="Main">
+            <Link to="/archive" className="mono-meta text-muted-foreground hover:text-foreground">ARCHIVE</Link>
             <a href="#information" className="mono-meta text-muted-foreground hover:text-foreground">INFO</a>
             <Button variant="ghost" onClick={() => setOpen(true)} className="mono-meta hover:text-primary" aria-label={`Open bag, ${count} items`}>
               BAG [{count}]
@@ -147,6 +148,7 @@ function Storefront() {
             <p className="mt-6 max-w-xl text-sm leading-relaxed text-muted-foreground">Six garments. Two sides. One pressing. Every piece carries a track number and catalogue mark. Nothing is repressed.</p>
             <div className="mt-10 flex flex-wrap gap-x-8 gap-y-3 mono-meta text-muted-foreground">
               <Link to="/about" className="hover:text-foreground">ABOUT + SERVICE</Link>
+              <Link to="/archive" className="hover:text-foreground">ARCHIVE</Link>
               <a href="mailto:MAIL@ARCNOIRE.INDEX" className="hover:text-foreground">CONTACT</a>
               <span>© 2026 ARC NOIRE</span>
             </div>
