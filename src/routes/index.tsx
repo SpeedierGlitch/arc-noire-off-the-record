@@ -87,8 +87,8 @@ function Storefront() {
               ))}
             </div>
             <div className="absolute bottom-4 right-4 z-20 flex border border-border bg-background md:bottom-8 md:right-8">
-              <Button variant="ghost" size="icon" onClick={() => move(-1)} className="border-r border-border" aria-label="Previous product">←</Button>
-              <Button variant="ghost" size="icon" onClick={() => move(1)} aria-label="Next product">→</Button>
+              <Button variant="ghost" size="icon" onClick={() => move(-1)} className="border-r border-border" aria-label="Previous product">⏮</Button>
+              <Button variant="ghost" size="icon" onClick={() => move(1)} aria-label="Next product">⏭</Button>
             </div>
           </div>
 
