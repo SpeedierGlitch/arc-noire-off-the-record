@@ -1,8 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { lazy, Suspense, useCallback, useEffect, useState } from "react";
-import { CATALOG_NO, DROP, RELEASE, SEASON, formatPrice, products } from "@/lib/catalog";
-import { useBag } from "@/lib/bag";
+import { useQuery } from "@tanstack/react-query";
+import { CATALOG_NO, DROP, RELEASE, SEASON } from "@/lib/catalog";
+import { fetchDropProducts, formatMoney } from "@/lib/shopify";
+import { useCartStore } from "@/stores/cartStore";
 import { Button } from "@/components/ui/button";
+import { RecordButton } from "@/components/RecordButton";
 import { useMounted, useReducedMotion } from "@/hooks/use-reduced-motion";
 
 const Sleeve3D = lazy(() => import("@/components/Sleeve3D"));
@@ -22,21 +25,39 @@ export const Route = createFileRoute("/")({
 });
 
 function Storefront() {
-  const { add, count, setOpen } = useBag();
+  const setOpen = useCartStore((s) => s.setOpen);
+  const addItem = useCartStore((s) => s.addItem);
+  const isLoading = useCartStore((s) => s.isLoading);
+  const count = useCartStore((s) => s.items.reduce((sum, i) => sum + i.quantity, 0));
+
+  const { data: products = [], isPending } = useQuery({
+    queryKey: ["drop-products"],
+    queryFn: fetchDropProducts,
+  });
+
   const [active, setActive] = useState(0);
-  const [size, setSize] = useState(products[0]?.sizes[0] ?? "");
+  const [variantId, setVariantId] = useState("");
   const [details, setDetails] = useState(false);
   const mounted = useMounted();
   const reducedMotion = useReducedMotion();
-  const product = products[active];
 
-  const move = useCallback((step: number) => {
-    setActive((current) => (current + step + products.length) % products.length);
-  }, []);
+  const product = products[active];
+  const variants = product?.node.variants.edges.map((e) => e.node) ?? [];
+  const selectedVariant = variants.find((v) => v.id === variantId) ?? variants[0];
+  const image = product?.node.images.edges[0]?.node;
+
+  const move = useCallback(
+    (step: number) => {
+      if (products.length === 0) return;
+      setActive((current) => (current + step + products.length) % products.length);
+    },
+    [products.length],
+  );
 
   useEffect(() => {
     if (!product) return;
-    setSize(product.sizes[0] ?? "");
+    const firstAvailable = product.node.variants.edges.find((e) => e.node.availableForSale)?.node;
+    setVariantId(firstAvailable?.id ?? product.node.variants.edges[0]?.node.id ?? "");
     setDetails(false);
   }, [product]);
 
@@ -49,15 +70,29 @@ function Storefront() {
     return () => window.removeEventListener("keydown", onKey);
   }, [move]);
 
-  if (!product) return null;
+  const handleAdd = async () => {
+    if (!product || !selectedVariant) return;
+    await addItem({
+      product,
+      variantId: selectedVariant.id,
+      variantTitle: selectedVariant.title,
+      price: selectedVariant.price,
+      quantity: 1,
+      selectedOptions: selectedVariant.selectedOptions ?? [],
+    });
+    setOpen(true);
+  };
 
   return (
     <main className="min-h-screen bg-background text-foreground">
       <section className="relative min-h-[100svh] overflow-hidden">
         <header className="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-start justify-between p-4 md:p-8">
-          <div className="pointer-events-auto">
-            <h1 className="label-sans text-lg tracking-[0.08em]">ARC NOIRE</h1>
-            <p className="mono-meta mt-1 text-muted-foreground">{CATALOG_NO} / {SEASON}</p>
+          <div className="pointer-events-auto flex items-center gap-3">
+            <RecordButton />
+            <div>
+              <h1 className="label-sans text-lg tracking-[0.08em]">ARC NOIRE</h1>
+              <p className="mono-meta mt-1 text-muted-foreground">{CATALOG_NO} / {SEASON}</p>
+            </div>
           </div>
           <nav className="pointer-events-auto flex items-center gap-5" aria-label="Main">
             <Link to="/archive" className="mono-meta text-muted-foreground hover:text-foreground">ARCHIVE</Link>
@@ -70,23 +105,45 @@ function Storefront() {
 
         <div className="grid min-h-[100svh] grid-rows-[1fr_auto] md:grid-cols-[minmax(0,1fr)_22rem] md:grid-rows-1">
           <div className="relative flex min-h-[56svh] items-center justify-center overflow-hidden bg-charcoal px-5 pb-16 pt-24 md:min-h-screen md:px-16 md:py-24">
-            <Link
-              to="/product/$slug"
-              params={{ slug: product.slug }}
-              className="group relative block h-auto w-full max-w-[36rem] border border-border bg-background p-2 md:max-h-[70vh] md:w-auto md:p-3"
-              aria-label={`View ${product.name} details`}
-            >
-              <img key={product.slug} src={product.image} alt={`${product.name} — ${product.colorway}`} className="carousel-image aspect-square h-auto max-h-[66vh] w-full object-cover transition-[filter] group-hover:contrast-125" width={1024} height={1024} />
-              <span className="mono-meta absolute bottom-5 right-5 bg-background px-2 py-1 text-foreground">VIEW ITEM ↗</span>
-            </Link>
-            <p className="mono-meta absolute bottom-5 left-5 text-foreground/70 md:bottom-8 md:left-8">
-              SIDE {product.side} / TRACK {product.track} · {String(active + 1).padStart(2, "0")}/{String(products.length).padStart(2, "0")}
-            </p>
+            {product && image ? (
+              <Link
+                to="/product/$handle"
+                params={{ handle: product.node.handle }}
+                className="group relative block h-auto w-full max-w-[36rem] border border-border bg-background p-2 md:max-h-[70vh] md:w-auto md:p-3"
+                aria-label={`View ${product.node.title} details`}
+              >
+                <img
+                  key={product.node.handle}
+                  src={image.url}
+                  alt={image.altText ?? product.node.title}
+                  loading="lazy"
+                  className="carousel-image aspect-square h-auto max-h-[66vh] w-full object-cover transition-[filter] group-hover:contrast-125"
+                />
+                <span className="mono-meta absolute bottom-5 right-5 bg-background px-2 py-1 text-foreground">VIEW ITEM ↗</span>
+              </Link>
+            ) : (
+              <p className="mono-meta text-muted-foreground">{isPending ? "LOADING PRESSING…" : "NO PRODUCTS FOUND"}</p>
+            )}
+
+            {product && (
+              <p className="mono-meta absolute bottom-5 left-5 text-foreground/70 md:bottom-8 md:left-8">
+                SIDE {product.side} / TRACK {product.track} · {String(active + 1).padStart(2, "0")}/{String(products.length).padStart(2, "0")}
+              </p>
+            )}
+
             <div className="absolute inset-y-0 left-4 z-20 hidden flex-col justify-center gap-3 md:flex">
               {products.map((item, index) => (
-                <Button variant="ghost" key={item.slug} onClick={() => setActive(index)} className={`h-px transition-all ${index === active ? "w-10 bg-foreground" : "w-4 bg-foreground/30 hover:w-7"}`} aria-label={`View ${item.name}`} aria-current={index === active ? "true" : undefined} />
+                <Button
+                  variant="ghost"
+                  key={item.node.id}
+                  onClick={() => setActive(index)}
+                  className={`h-px transition-all ${index === active ? "w-10 bg-foreground" : "w-4 bg-foreground/30 hover:w-7"}`}
+                  aria-label={`View ${item.node.title}`}
+                  aria-current={index === active ? "true" : undefined}
+                />
               ))}
             </div>
+
             <div className="absolute bottom-4 right-4 z-20 flex border border-border bg-background md:bottom-8 md:right-8">
               <Button variant="ghost" size="icon" onClick={() => move(-1)} className="border-r border-border" aria-label="Previous product">⏮</Button>
               <Button variant="ghost" size="icon" onClick={() => move(1)} aria-label="Next product">⏭</Button>
@@ -97,25 +154,51 @@ function Storefront() {
             <div className="mb-auto hidden pt-20 md:block">
               <p className="mono-meta text-muted-foreground">{DROP} / {RELEASE}</p>
             </div>
-            <div>
-              <p className="mono-meta text-primary">{product.sku}</p>
-              <h2 className="label-sans mt-2 text-xl leading-tight tracking-[0.04em]">{product.name}</h2>
-              <p className="mono-meta mt-2 text-muted-foreground">{product.colorway} · {product.material}</p>
-              <p className="label-sans mt-5 text-lg">{formatPrice(product.price)}</p>
+            {product && selectedVariant && (
+              <div>
+                <p className="mono-meta text-primary">{CATALOG_NO}-{product.track}</p>
+                <h2 className="label-sans mt-2 text-xl leading-tight tracking-[0.04em]">{product.node.title}</h2>
+                <p className="label-sans mt-5 text-lg">{formatMoney(selectedVariant.price.amount, selectedVariant.price.currencyCode)}</p>
 
-              <div className="mt-6 flex flex-wrap gap-px bg-border" aria-label="Select size">
-                {product.sizes.map((item) => (
-                  <Button variant="ghost" key={item} onClick={() => setSize(item)} className={`min-w-12 flex-1 bg-background px-3 py-3 text-center mono-meta ${size === item ? "bg-foreground text-background" : "hover:bg-muted"}`} aria-pressed={size === item}>{item}</Button>
-                ))}
+                <div className="mt-6 flex flex-wrap gap-px bg-border" aria-label="Select option">
+                  {variants.map((variant) => (
+                    <Button
+                      variant="ghost"
+                      key={variant.id}
+                      onClick={() => setVariantId(variant.id)}
+                      disabled={!variant.availableForSale}
+                      className={`min-w-12 flex-1 bg-background px-3 py-3 text-center mono-meta ${variant.id === selectedVariant.id ? "bg-foreground text-background" : "hover:bg-muted"} ${variant.availableForSale ? "" : "opacity-30 line-through"}`}
+                      aria-pressed={variant.id === selectedVariant.id}
+                    >
+                      {variant.title}
+                    </Button>
+                  ))}
+                </div>
+
+                <Button
+                  variant="ghost"
+                  onClick={handleAdd}
+                  disabled={isLoading || !selectedVariant.availableForSale}
+                  className="label-sans mt-px w-full bg-primary py-4 text-primary-foreground hover:bg-foreground hover:text-background"
+                >
+                  {isLoading ? "ADDING…" : selectedVariant.availableForSale ? `ADD TO BAG — ${selectedVariant.title}` : "SOLD OUT"}
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  onClick={() => setDetails((value) => !value)}
+                  className="mono-meta flex w-full items-center justify-between border-b border-border py-4 text-muted-foreground"
+                  aria-expanded={details}
+                >
+                  DETAILS + FIT <span>{details ? "−" : "+"}</span>
+                </Button>
+                {details && (
+                  <p className="whitespace-pre-line pt-4 text-xs leading-relaxed text-muted-foreground">
+                    {product.node.description || "NO LINER NOTES FILED."}
+                  </p>
+                )}
               </div>
-              <Button variant="ghost" onClick={() => add(product.slug, size)} className="label-sans mt-px w-full bg-primary py-4 text-primary-foreground hover:bg-foreground hover:text-background">
-                ADD TO BAG — {size}
-              </Button>
-              <Button variant="ghost" onClick={() => setDetails((value) => !value)} className="mono-meta flex w-full items-center justify-between border-b border-border py-4 text-muted-foreground" aria-expanded={details}>
-                DETAILS + FIT <span>{details ? "−" : "+"}</span>
-              </Button>
-              {details && <p className="pt-4 text-xs leading-relaxed text-muted-foreground">{product.liner}<br /><br />{product.fit}</p>}
-            </div>
+            )}
           </aside>
         </div>
       </section>
