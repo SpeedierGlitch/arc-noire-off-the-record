@@ -14,6 +14,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as ArchiveRouteImport } from './routes/archive'
 import { Route as OffTheRecordRouteImport } from './routes/off-the-record'
 import { Route as ShopRouteImport } from './routes/shop'
+import { Route as ProductHandleRouteImport } from './routes/product.$handle'
 import { Route as ProductSlugRouteImport } from './routes/product.$slug'
 
 const IndexRoute = IndexRouteImport.update({
@@ -41,6 +42,11 @@ const ShopRoute = ShopRouteImport.update({
   path: '/shop',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProductHandleRoute = ProductHandleRouteImport.update({
+  id: '/product/$handle',
+  path: '/product/$handle',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProductSlugRoute = ProductSlugRouteImport.update({
   id: '/product/$slug',
   path: '/product/$slug',
@@ -53,6 +59,7 @@ export interface FileRoutesByFullPath {
   '/archive': typeof ArchiveRoute
   '/off-the-record': typeof OffTheRecordRoute
   '/shop': typeof ShopRoute
+  '/product/$handle': typeof ProductHandleRoute
   '/product/$slug': typeof ProductSlugRoute
 }
 export interface FileRoutesByTo {
@@ -61,6 +68,7 @@ export interface FileRoutesByTo {
   '/archive': typeof ArchiveRoute
   '/off-the-record': typeof OffTheRecordRoute
   '/shop': typeof ShopRoute
+  '/product/$handle': typeof ProductHandleRoute
   '/product/$slug': typeof ProductSlugRoute
 }
 export interface FileRoutesById {
@@ -70,15 +78,28 @@ export interface FileRoutesById {
   '/archive': typeof ArchiveRoute
   '/off-the-record': typeof OffTheRecordRoute
   '/shop': typeof ShopRoute
+  '/product/$handle': typeof ProductHandleRoute
   '/product/$slug': typeof ProductSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/about' | '/archive' | '/off-the-record' | '/shop' | '/product/$slug'
+    | '/'
+    | '/about'
+    | '/archive'
+    | '/off-the-record'
+    | '/shop'
+    | '/product/$handle'
+    | '/product/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
-    '/' | '/about' | '/archive' | '/off-the-record' | '/shop' | '/product/$slug'
+    | '/'
+    | '/about'
+    | '/archive'
+    | '/off-the-record'
+    | '/shop'
+    | '/product/$handle'
+    | '/product/$slug'
   id:
     | '__root__'
     | '/'
@@ -86,6 +107,7 @@ export interface FileRouteTypes {
     | '/archive'
     | '/off-the-record'
     | '/shop'
+    | '/product/$handle'
     | '/product/$slug'
   fileRoutesById: FileRoutesById
 }
@@ -95,6 +117,7 @@ export interface RootRouteChildren {
   ArchiveRoute: typeof ArchiveRoute
   OffTheRecordRoute: typeof OffTheRecordRoute
   ShopRoute: typeof ShopRoute
+  ProductHandleRoute: typeof ProductHandleRoute
   ProductSlugRoute: typeof ProductSlugRoute
 }
 
@@ -135,6 +158,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShopRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/product/$handle': {
+      id: '/product/$handle'
+      path: '/product/$handle'
+      fullPath: '/product/$handle'
+      preLoaderRoute: typeof ProductHandleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/product/$slug': {
       id: '/product/$slug'
       path: '/product/$slug'
@@ -151,6 +181,7 @@ const rootRouteChildren: RootRouteChildren = {
   ArchiveRoute: ArchiveRoute,
   OffTheRecordRoute: OffTheRecordRoute,
   ShopRoute: ShopRoute,
+  ProductHandleRoute: ProductHandleRoute,
   ProductSlugRoute: ProductSlugRoute,
 }
 export const routeTree = rootRouteImport
